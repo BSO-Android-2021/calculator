@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:function_tree/function_tree.dart';
 
 void main() {
   runApp(MyApp());
@@ -42,13 +43,13 @@ class _CalculatorState extends State<Calculator> {
     '2',
     '3',
     '+',
-    '',
     '0',
     '.',
     '=',
   ];
 
   String display = '0';
+  String expression = "";
 
   void operasi(String karakter) {
     // 1. pecah string menjadi array => (split)
@@ -94,21 +95,53 @@ class _CalculatorState extends State<Calculator> {
     });
   }
 
+  void buttonOnClick(String tombol) {
+    display = display + tombol;
+  }
+
+  void calculate() {
+    expression= display + "=";
+    display = display.interpret().toString();
+  }
+
+  void delete() {
+    display = display.substring(0, display.length - 1);
+  }
+
+  void clearAll() {
+    display = "0";
+  }
+
   @override
   Widget build(BuildContext context) {
+    var lebarLayar = MediaQuery.of(context).size.width;
+    var tinggiLayar = MediaQuery.of(context).size.height;
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
+              flex: 1,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Text(
-                    display,
-                    style: Theme.of(context).textTheme.headline3,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        expression,
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text(
+                        display,
+                        style: Theme.of(context).textTheme.headline3,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -116,34 +149,84 @@ class _CalculatorState extends State<Calculator> {
               flex: 2,
               child: Container(
                 color: Colors.grey[200],
-                child: GridView.count(
-                  crossAxisCount: 4,
+                child: Wrap(
                   children: [
                     for (String button in buttons)
                       if (button == 'delete')
-                        IconButton(
-                          onPressed: () {
-                            operasi(button);
-                          },
-                          icon: Icon(Icons.backspace),
+                        SizedBox(
+                          width: lebarLayar / 4,
+                          height: lebarLayar / 5,
+                          child: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                delete();
+                              });
+                            },
+                            icon: Icon(Icons.backspace),
+                          ),
                         )
-                      else if (button == '')
-                        Container()
+                      else if (button == 'AC')
+                        SizedBox(
+                          width: lebarLayar / 4,
+                          height: lebarLayar / 5,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                // display = button;
+                                if (display == '0') {
+                                  display = button;
+                                } else {
+                                  clearAll();
+                                }
+                              });
+                            },
+                            child: Text(
+                              button,
+                              style: Theme.of(context).textTheme.headline6,
+                            ),
+                          ),
+                        )
+                      else if (button == "=")
+                        SizedBox(
+                          width: lebarLayar / 4,
+                          height: lebarLayar / 5,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                // display = button;
+                                if (display == '0') {
+                                  display = button;
+                                } else {
+                                  calculate();
+                                }
+                              });
+                            },
+                            child: Text(
+                              button,
+                              style: Theme.of(context).textTheme.headline6,
+                            ),
+                          ),
+                        )
                       else
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              // display = button;
-                              if (display == '0') {
-                                display = button;
-                              } else {
-                                operasi(button);
-                              }
-                            });
-                          },
-                          child: Text(
-                            button,
-                            style: Theme.of(context).textTheme.headline6,
+                        SizedBox(
+                          width:
+                              button == "0" ? lebarLayar / 2 : lebarLayar / 4,
+                          height: lebarLayar / 5,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                // display = button;
+                                if (display == '0') {
+                                  display = button;
+                                } else {
+                                  buttonOnClick(button);
+                                }
+                              });
+                            },
+                            child: Text(
+                              button,
+                              style: Theme.of(context).textTheme.headline6,
+                            ),
                           ),
                         ),
                   ],
