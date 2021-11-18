@@ -2,32 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:function_tree/function_tree.dart';
 
 void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Calculator App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: Calculator(),
-    );
-  }
+  runApp(Calculator());
 }
 
 class Calculator extends StatefulWidget {
-  Calculator({Key? key}) : super(key: key);
-
   @override
   _CalculatorState createState() => _CalculatorState();
 }
 
 class _CalculatorState extends State<Calculator> {
+  String tentangKami = """
+BSO Android 2021:
+1. Akhdan Musyaffa Firdaus
+2. Faizal Ramadhan
+3. Farhan Rizky Fauzi
+4. Fawzan Ibnu
+5. Naufal Berlian
+6. Shinta Sirnawati
+7. Zulfa Dwi Audina
+""";
+
+  bool darkMode = false;
   final List<String> buttons = [
-    'AC',
+    'C',
     'delete',
     '%',
     '/',
@@ -43,6 +40,7 @@ class _CalculatorState extends State<Calculator> {
     '2',
     '3',
     '+',
+    '00',
     '0',
     '.',
     '=',
@@ -51,189 +49,184 @@ class _CalculatorState extends State<Calculator> {
   String display = '0';
   String expression = "";
 
-  void operasi(String karakter) {
-    // 1. pecah string menjadi array => (split)
-    // 2. sum (total) nilai di array => fold/reduce
-    // 3. ubah hasil sum menjadi string
-
-    setState(() {
-      switch (karakter) {
-        case '=':
-          if (display.contains('+')) {
-            List<String> nilai = display.split('+');
-            print(nilai.toString());
-            int hasil = nilai.fold(0, (prev, next) => prev + int.parse(next));
-            display = hasil.toString();
-          } else if (display.contains('-')) {
-            List<String> nilai = display.split('-');
-            int hasil = int.parse(nilai[0]) - int.parse(nilai[1]);
-            display = hasil.toString();
-          } else if (display.contains('*')) {
-            List<String> nilai = display.split('*');
-            int hasil = int.parse(nilai[0]) * int.parse(nilai[1]);
-            display = hasil.toString();
-          } else if (display.contains('/')) {
-            List<String> nilai = display.split('/');
-            double hasil = int.parse(nilai[0]) / int.parse(nilai[1]);
-            display = hasil.toString();
-          }
-          break;
-        case 'AC':
-          display = '0';
-          break;
-        case 'delete':
-          if (display.length > 1) {
-            display = display.substring(0, display.length - 1);
-          } else {
-            display = '0';
-          }
-          break;
-        default:
-          display += karakter;
-          break;
-      }
-    });
+  void buttonOnClick(String tombol) {
+    switch (tombol) {
+      case "C":
+        clearAll();
+        break;
+      case "delete":
+        delete();
+        break;
+      case "=":
+        calculate();
+        break;
+      default:
+        assign(tombol);
+        break;
+    }
   }
 
-  void buttonOnClick(String tombol) {
-    display = display + tombol;
+  void assign(String tombol) {
+    if (display != "0") {
+      display = display + tombol;
+    } else {
+      display = tombol;
+    }
   }
 
   void calculate() {
-    expression= display + "=";
-    display = display.interpret().toString();
+    expression = display;
+    display = "=" + display.interpret().toString();
   }
 
   void delete() {
-    display = display.substring(0, display.length - 1);
+    if (display.length > 1) {
+      display = display.substring(0, display.length - 1);
+    } else {
+      display = "0";
+    }
   }
 
   void clearAll() {
+    expression = "";
     display = "0";
+  }
+
+  String getButtonText(String tombol) {
+    if (tombol == "delete") {
+      return "⌫";
+    } else if (tombol == "/") {
+      return "÷";
+    } else {
+      return tombol;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    var lebarLayar = MediaQuery.of(context).size.width;
-    var tinggiLayar = MediaQuery.of(context).size.height;
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Text(
-                        expression,
-                        style: Theme.of(context).textTheme.headline3,
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Text(
-                        display,
-                        style: Theme.of(context).textTheme.headline3,
-                      ),
-                    ),
-                  ],
+    return MaterialApp(
+      title: 'Calculator App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: darkMode ? Brightness.dark : Brightness.light,
+      ),
+      home: Scaffold(
+        appBar: AppBar(title: Text("Calculator App")),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              ListTile(
+                title: Text("Dark Mode"),
+                trailing: Switch(
+                  value: darkMode,
+                  onChanged: (val) {
+                    setState(() {
+                      darkMode = val;
+                    });
+                  },
                 ),
               ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Container(
-                color: Colors.grey[200],
-                child: Wrap(
-                  children: [
-                    for (String button in buttons)
-                      if (button == 'delete')
-                        SizedBox(
-                          width: lebarLayar / 4,
-                          height: lebarLayar / 5,
-                          child: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                delete();
-                              });
-                            },
-                            icon: Icon(Icons.backspace),
-                          ),
-                        )
-                      else if (button == 'AC')
-                        SizedBox(
-                          width: lebarLayar / 4,
-                          height: lebarLayar / 5,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                // display = button;
-                                if (display == '0') {
-                                  display = button;
-                                } else {
-                                  clearAll();
-                                }
-                              });
-                            },
-                            child: Text(
-                              button,
-                              style: Theme.of(context).textTheme.headline6,
-                            ),
-                          ),
-                        )
-                      else if (button == "=")
-                        SizedBox(
-                          width: lebarLayar / 4,
-                          height: lebarLayar / 5,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                // display = button;
-                                if (display == '0') {
-                                  display = button;
-                                } else {
-                                  calculate();
-                                }
-                              });
-                            },
-                            child: Text(
-                              button,
-                              style: Theme.of(context).textTheme.headline6,
-                            ),
-                          ),
-                        )
-                      else
-                        SizedBox(
-                          width:
-                              button == "0" ? lebarLayar / 2 : lebarLayar / 4,
-                          height: lebarLayar / 5,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                // display = button;
-                                if (display == '0') {
-                                  display = button;
-                                } else {
-                                  buttonOnClick(button);
-                                }
-                              });
-                            },
-                            child: Text(
-                              button,
-                              style: Theme.of(context).textTheme.headline6,
-                            ),
-                          ),
+              ListTile(
+                title: Text("Tentang Kami"),
+                trailing: Builder(builder: (context) {
+                  return IconButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Tentang Kami"),
+                              content: Text(tentangKami),
+                              actions: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Ok"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      icon: Icon(Icons.info));
+                }),
+              ),
+            ],
+          ),
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: SelectableText(
+                          expression,
+                          style: TextStyle(fontSize: 38),
                         ),
-                  ],
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: SelectableText(
+                          display,
+                          style: TextStyle(fontSize: 38),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                flex: 3,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  // color: Colors.grey[200],
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      childAspectRatio: 3 / 2.25,
+                      // crossAxisSpacing: 16,
+                      // mainAxisSpacing: 16,
+                    ),
+                    itemCount: buttons.length,
+                    itemBuilder: (context, index) {
+                      return TextButton(
+                        onPressed: () {
+                          try {
+                            setState(() {
+                              buttonOnClick(buttons[index]);
+                            });
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                                content: Text(
+                                  "Operasi tidak valid",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          getButtonText(buttons[index]),
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
