@@ -97,6 +97,8 @@ BSO Android 2021:
       return "⌫";
     } else if (tombol == "/") {
       return "÷";
+    } else if (tombol == "*") {
+      return "x";
     } else {
       return tombol;
     }
